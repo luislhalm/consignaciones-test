@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Consignaciones · SALG</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#0f3460;--sea:#1a6b8a;--acc:#e8a838;
+  --bg:#f4f6f9;--surf:#fff;--surf2:#f0f4f8;
+  --t:#1a2540;--tm:#5a6a85;--tl:#8a9ab5;
+  --b:rgba(15,52,96,.10);--b2:rgba(15,52,96,.20);
+  --ok:#2a9d60;--ok2:#e8f7ef;--warn:#e08020;--warn2:#fff3e0;--err:#c0392b;--err2:#fdeaea;
+  --r:12px;--rs:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--t);font-size:14px;min-height:100vh}
+.screen{display:none;flex-direction:column;min-height:100vh}.screen.on{display:flex}
+.hdr{background:var(--navy);color:#fff;height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;flex-shrink:0;position:sticky;top:0;z-index:50}
+.hdr-l{display:flex;align-items:center;gap:9px}
+.hdr-logo{width:28px;height:28px;background:var(--acc);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.hdr-t{font-size:14px;font-weight:600}.hdr-s{font-size:11px;opacity:.6}
+.hdr-btn{background:rgba(255,255,255,.12);border:none;color:#fff;border-radius:6px;width:32px;height:32px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;font-family:inherit}
+.hdr-btn:active{background:rgba(255,255,255,.25)}
+.body{flex:1;overflow-y:auto;padding-bottom:8px}
+.pg{display:none}.pg.on{display:block}
+.bnav{display:flex;border-top:0.5px solid var(--b2);background:var(--surf);flex-shrink:0;position:sticky;bottom:0}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 2px 6px;border:none;background:transparent;color:var(--tl);cursor:pointer;gap:2px;font-family:inherit;font-size:10px;font-weight:500;transition:color .12s}
+.ni.on{color:var(--navy)}
+#s-login{background:var(--navy);align-items:center;justify-content:center;gap:1.4rem}
+.login-logo{width:76px;height:76px;background:var(--acc);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:34px}
+.login-t{color:#fff;font-size:22px;font-weight:700}
+.login-s{color:rgba(255,255,255,.5);font-size:13px;text-align:center;max-width:260px;line-height:1.5}
+.login-btn{background:var(--acc);color:var(--navy);border:none;border-radius:12px;padding:14px 32px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.login-error{color:#ffb3b3;font-size:12px;text-align:center;max-width:280px}
+#s-loading{background:var(--navy);align-items:center;justify-content:center;gap:1rem}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-t{color:rgba(255,255,255,.7);font-size:13px}
+.card{background:var(--surf);border-radius:var(--r);border:0.5px solid var(--b);margin:8px 12px;overflow:hidden}
+.row{display:flex;align-items:center;min-height:46px;padding:0 12px;border-bottom:0.5px solid var(--b);gap:8px}
+.row:last-child{border-bottom:none}
+.lbl{font-size:12px;color:var(--tm);flex:0 0 115px;line-height:1.3}
+.inp{flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--t);text-align:right;outline:none;padding:10px 0}
+.inp::placeholder{color:var(--tl)}
+.sel{flex:1;border:none;background:transparent;font-family:inherit;font-size:13px;color:var(--t);text-align:right;outline:none;-webkit-appearance:none;cursor:pointer;padding:10px 0}
+.unit{font-size:11px;color:var(--tl);flex-shrink:0}
+.tgl-wrap{display:flex;align-items:center;gap:7px;margin-left:auto}
+.tgl{width:40px;height:22px;border-radius:11px;background:var(--b2);border:none;position:relative;cursor:pointer;transition:background .18s;flex-shrink:0}
+.tgl.on{background:var(--ok)}.tgl::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .18s;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.tgl.on::after{left:21px}
+.sec{font-size:11px;font-weight:600;color:var(--tm);text-transform:uppercase;letter-spacing:.7px;padding:14px 12px 6px;display:flex;align-items:center;gap:8px}
+.sec::before,.sec::after{content:'';flex:1;height:0.5px;background:var(--b)}
+.btns{display:flex;gap:8px;padding:6px 12px}
+.btn{border:none;border-radius:var(--rs);padding:12px 14px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;flex:1;transition:opacity .12s}
+.btn:active{opacity:.8}
+.bp{background:var(--navy);color:#fff}.bs{background:var(--sea);color:#fff}
+.bd{background:var(--err2);color:var(--err)}.bg2{background:transparent;border:0.5px solid var(--b2);color:var(--t)}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 12px 6px}
+.section-t{font-size:13px;font-weight:600;color:var(--t)}
+.section-a{font-size:12px;color:var(--sea);font-weight:600;cursor:pointer}
+.empty{text-align:center;padding:20px;color:var(--tl);font-size:12px}
+.pda-hero{background:var(--navy);color:#fff;margin:8px 12px 6px;border-radius:var(--r);padding:14px}
+.pda-lbl{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.6px}
+.pda-amt{font-size:26px;font-weight:600;margin-top:3px;letter-spacing:-.5px}
+.pda-sub{font-size:11px;opacity:.5;margin-top:1px}
+.ci{display:flex;align-items:center;padding:10px 12px;border-bottom:0.5px solid var(--b);gap:8px}
+.ci:last-child{border-bottom:none}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cn{flex:1;font-size:12px;color:var(--t);line-height:1.3}
+.ca{font-size:12px;font-weight:600;color:var(--t)}
+.sof-row{display:flex;align-items:flex-start;padding:9px 12px;border-bottom:0.5px solid var(--b);gap:8px}
+.sof-row:last-child{border-bottom:none}
+.sof-tc{flex-shrink:0;width:68px;text-align:right}
+.sof-d{font-size:10px;color:var(--tl)}
+.sof-t{font-size:12px;font-weight:600;color:var(--navy)}
+.sof-ev{flex:1;font-size:12px;color:var(--t);line-height:1.4}
+.del-btn{background:none;border:none;color:var(--tl);cursor:pointer;font-size:14px;padding:2px 4px;flex-shrink:0}
+.srs-item{display:flex;align-items:flex-start;padding:10px 12px;border-bottom:0.5px solid var(--b);gap:10px}
+.srs-item:last-child{border-bottom:none}
+.srs-check{width:20px;height:20px;border-radius:5px;border:1.5px solid var(--b2);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;transition:all .12s;margin-top:1px;background:transparent}
+.srs-check.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.modal-bg{background:rgba(10,22,40,.5);position:fixed;inset:0;display:flex;align-items:flex-end;z-index:100}
+.modal-sheet{background:var(--surf);border-radius:16px 16px 0 0;width:100%;padding:14px;max-height:80vh;display:flex;flex-direction:column}
+.modal-handle{width:32px;height:3px;background:var(--b2);border-radius:2px;margin:0 auto 14px}
+.modal-t{font-size:14px;font-weight:600;margin-bottom:10px}
+.modal-list{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:4px}
+.mopt{padding:10px 11px;background:var(--surf2);border-radius:var(--rs);font-size:12px;cursor:pointer;border:1px solid transparent;text-align:left;font-family:inherit;color:var(--t)}
+.mopt.on{background:rgba(15,52,96,.07);border-color:var(--navy);color:var(--navy);font-weight:600}
+pre.doc{font-family:'Courier New',monospace;font-size:11px;line-height:1.75;white-space:pre-wrap;color:var(--t);background:var(--surf);border-radius:var(--r);border:0.5px solid var(--b);padding:14px;margin:0 12px 10px}
+.doc-tags{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 12px 12px}
+.dtag{background:var(--surf);border-radius:var(--rs);border:0.5px solid var(--b);padding:12px 10px;cursor:pointer;text-align:center}
+.dtag-ico{font-size:20px;margin-bottom:4px}
+.dtag-n{font-size:12px;font-weight:600;color:var(--t);line-height:1.3}
+.dtag-s{font-size:10px;color:var(--tl);margin-top:2px}
+.bdg{font-size:10px;font-weight:600;padding:2px 6px;border-radius:20px}
+.bdg-ok{background:var(--ok2);color:#1a6b3a}
+.bdg-warn{background:var(--warn2);color:#7a4800}
+.bdg-grey{background:var(--surf2);color:var(--tm)}
+.toast{position:fixed;top:62px;left:50%;transform:translateX(-50%);background:var(--t);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s;white-space:nowrap;z-index:200}
+.toast.on{opacity:1}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--acc)}
+.sync-dot.syncing{background:#ffeb3b;animation:pulse .8s infinite}
+.sync-dot.error{background:#ff5252}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+
+<div class="screen on" id="s-login">
+  <div class="login-logo">⚓</div>
+  <div class="login-t">Consignaciones</div>
+  <div class="login-s">S.A. López Guillén<br>Accede con tu cuenta de empresa</div>
+  <button class="login-btn" id="login-btn">🔐 Iniciar sesión con Microsoft</button>
+  <div class="login-error" id="login-error"></div>
+</div>
+
+<div class="screen" id="s-loading">
+  <div class="spinner"></div>
+  <div class="loading-t" id="loading-msg">Cargando...</div>
+</div>
+
+<div class="screen" id="s-app">
+  <div class="hdr">
+    <div class="hdr-l">
+      <div class="hdr-logo">⚓</div>
+      <div><div class="hdr-t" id="hdr-title">Consignaciones</div><div class="hdr-s" id="hdr-sub">S.A. López Guillén</div></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="display:flex;align-items:center;gap:4px"><div class="sync-dot" id="sync-dot"></div><span style="font-size:10px;color:rgba(255,255,255,.5)" id="sync-txt"></span></div>
+      <div style="font-size:11px;color:rgba(255,255,255,.7);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="hdr-user"></div>
+      <button class="hdr-btn" id="new-btn">+</button>
+    </div>
+  </div>
+  <div class="body" id="app-body"></div>
+  <div class="bnav">
+    <button class="ni on" id="nav-inicio" data-tab="inicio">🏠<span>Inicio</span></button>
+    <button class="ni" id="nav-buque" data-tab="buque">🚢<span>Buque</span></button>
+    <button class="ni" id="nav-sof" data-tab="sof">📋<span>SOF</span></button>
+    <button class="ni" id="nav-pda" data-tab="pda">🧮<span>PDA</span></button>
+    <button class="ni" id="nav-docs" data-tab="docs">📁<span>Docs</span></button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var CLIENT_ID='b67ff227-bdd7-47a3-b0b9-3d3e22c3d906';
+var TENANT_ID='4af64d57-4be2-49ee-863f-1a7faee6e22b';
+var SP_HOST='grupolopezguillensl.sharepoint.com';
+var SP_SITE='/sites/Consignaciones';
+var SP_LIST='Escalas';
+var SP_BASE='https://'+SP_HOST+SP_SITE;
+var SCOPES=['https://'+SP_HOST+'/Sites.ReadWrite.All','User.Read'];
+
+// TARIFAS
+var ALM_PRAC=[[0,266.37],[1000,295.10],[2000,336.67],[4000,380.15],[6000,421.43],[8000,469.77],[12000,519.84],[16000,573.97],[20000,636.14],[25000,696.43],[30000,759.44],[40000,820.12]];
+var ALM_AMAR=[[0,243.20],[1000,267.93],[2000,298.42],[4000,331.39],[6000,372.52],[8000,415.19],[12000,464.37],[16000,516.46],[20000,576.64],[25000,637.38],[30000,696.67],[40000,756.08]];
+var ALM_TUGS=[[0,306.38],[3000,612.75],[5000,980.39],[7000,1348.05],[10000,3308.86],[13000,4779.44],[16000,6188.77],[19000,7230.45],[22000,8272.13],[25000,8639.78],[30000,8976.80]];
+var CRS_PRAC_GT=[0,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,15000,20000,25000,30000,40000,99000];
+var CRS_PRAC_T=[125.33,127.96,130.62,138.62,143.67,148.72,153.77,158.84,182.47,206.12,234.17,357.43,480.69,598.77,722.02,963.36,1544.96];
+var CRS_AMAR_GT=[0,1000,2500,5000,8000,12000,20000,45000];
+var CRS_AMAR_T=[240.47,273.26,295.12,382.56,765.12,983.73,1038.38,1836.29];
+var CRS_TUGS_GT=[0,3000,5000,7000,10000,13000,16000,19000,22000,25000,30000];
+var CRS_TUGS_T=[277.93,555.84,889.35,1222.87,3001.59,4335.62,5614.08,6559.01,7503.96,7837.46,8143.19];
+var MOT_PRAC_GT=[0,1000,2000,3000,4000,5000,6000,7000,8000,9000,10000,12000,15000,20000,25000,30000];
+var MOT_PRAC_T=[234.13,240.07,256.51,272.02,282.40,287.78,292.98,298.12,303.21,308.12,391.18,457.47,556.89,722.59,888.31,1054.02];
+var MOT_AMAR_GT=[0,1000,2000,3000,5000,8000,10000];
+var MOT_AMAR_T=[93.68,95.50,98.20,101.00,107.00,118.00,126.00];
+var AGENCY_GT=[0,1000,2500,5000,8000,12000,20000];
+var AGENCY_TONS=[0,300,600,1000];
+var AGENCY_ALM=[[946.55,1043.52,1140.49,1260.62],[1343.12,1479.16,1618.11,1793.23],[2033.49,2223.09,2453.21,2697.81],[3029.25,3340.42,3677.65,4038.03],[4111.85,4327.50,4543.15,4758.80],[5411.54,5701.01,5990.47,6500.00],[6132.31,6853.08,7572.40,8277.24]];
+var AGENCY_CRS=[[994.44,1096.03,1198.19,1324.39],[1411.07,1553.99,1699.97,1883.95],[2136.36,2335.46,2577.32,2834.29],[3182.50,3509.41,3863.70,4242.31],[4319.86,4546.42,4772.98,4999.54],[5685.30,5989.42,6293.52,7000.00],[6442.54,7199.77,7955.48,8695.98]];
+
+var SOF_LIST=["Vessel on roads, EOSP","Dropped Anchor","Anchor Heaved up","Pilot on board (IN)","Pilot on board (OUT)","First Line Ashore","All Fast Alongside","Gangway Down","N.O.R. Tendered","N.O.R. Received","N.O.R. Accepted","Discharging ops started","Discharging ops finished","Loading ops started","Loading and completed cargo operation","Tanks inspected","Hoses connected","Hoses disconnected","Ullage commenced","Ullage Completed","Calculations completed","Completed final draft survey","Cargo Docs. on board","Vessel Unberthed","Vessel sailed","Not working","Stopped due to strong winds","Stopped due to rain","Stopped due to heavy weather conditions","Vessel's shifting alongside"];
+var SRS_CATS=[{cat:"Aprovisionamiento",items:["Agua potable","Víveres / Provisions","Gas oil","Fuel oil","Lubricantes"]},{cat:"Documentación",items:["Despacho de entrada","Despacho de salida","Manifiesto de carga","Bill of Lading","Certificados sanitarios"]},{cat:"Tripulación",items:["Cambio de tripulantes","Visados / Permisos","Médico a bordo","Repatriación","Correo / Courier"]},{cat:"Buque",items:["Reparaciones menores","Inspección clasificación","Inspección de casco","Recogida residuos oleosos","Recogida basuras","Desratización"]},{cat:"Carga",items:["Pesaje / Draught survey","Muestras de carga","Fumigación","Limpieza de bodegas","Precintos / Sellos"]}];
+
+function lookupT(gt,gta,ta){var v=ta[0];for(var i=0;i<gta.length;i++){if(gt>=gta[i])v=ta[i];else break;}return v;}
+function lookupS(gt,tbl){var v=tbl[0][1];for(var i=0;i<tbl.length;i++){if(gt>=tbl[i][0])v=tbl[i][1];else break;}return v;}
+function f2(v){return Math.round(v*100)/100;}
+
+function calcAgency(gt,tons,port){
+  gt=parseFloat(gt)||0;tons=parseFloat(tons)||0;
+  var tbl=(port==='Carboneras'||port==='Endesa Terminal')?AGENCY_CRS:AGENCY_ALM;
+  var gr=0;for(var i=0;i<AGENCY_GT.length;i++){if(gt>=AGENCY_GT[i])gr=i;else break;}
+  var tc=0;for(var i=0;i<AGENCY_TONS.length;i++){if(tons>=AGENCY_TONS[i])tc=i;else break;}
+  return f2(tbl[gr][tc]||946.55);
+}
+
+function calcPDA(port,gt,loa,tugs,tons,days){
+  gt=parseFloat(gt)||0;loa=parseFloat(loa)||0;tons=parseFloat(tons)||0;days=parseFloat(days)||1;
+  var agency=calcAgency(gt,tons,port);
+  var items=[];
+  if(port==='Almería'){
+    var pr=f2(lookupS(gt,ALM_PRAC));
+    var am=f2(lookupS(gt,ALM_AMAR));
+    var tug=(tugs&&(loa>100||gt>8000))?f2(lookupS(gt,ALM_TUGS)):0;
+    items=[
+      {n:"Practicaje (In & Out)",a:pr,c:"#1a6b8a"},
+      {n:"Amarradores (In & Out)",a:am,c:"#1a6b8a"},
+      {n:"Remolcadores (In & Out)",a:tug,c:"#e8a838"},
+      {n:"Tasa Estancia B-1 ("+days+"d × GT "+gt+")",a:f2(gt*0.18147*days),c:"#0f3460"},
+      {n:"Tasa Luces B-0",a:f2(gt*0.01995),c:"#0f3460"},
+      {n:"Tasa Residuos",a:f2(gt*0.05664),c:"#0f3460"},
+      {n:"Ship's clearance",a:0,c:"#2a9d60"},
+      {n:"ISPS",a:0,c:"#2a9d60"},
+      {n:"Honorarios agencia",a:agency,c:"#c0392b"}
+    ];
+  } else if(port==='Carboneras'){
+    var pr=f2(lookupT(gt,CRS_PRAC_GT,CRS_PRAC_T)*2);
+    var am=f2(lookupT(gt,CRS_AMAR_GT,CRS_AMAR_T));
+    var tug=tugs?f2(lookupT(gt,CRS_TUGS_GT,CRS_TUGS_T)):0;
+    items=[
+      {n:"Practicaje (In & Out)",a:pr,c:"#1a6b8a"},
+      {n:"Amarradores (In & Out)",a:am,c:"#1a6b8a"},
+      {n:"Remolcadores (In & Out)",a:tug,c:"#e8a838"},
+      {n:"Tasa Residuos",a:f2(gt*0.03747),c:"#0f3460"},
+      {n:"Ship's clearance",a:209.10,c:"#2a9d60"},
+      {n:"ISPS",a:215.19,c:"#2a9d60"},
+      {n:"Comunicaciones",a:180.02,c:"#2a9d60"},
+      {n:"Varios",a:102.29,c:"#2a9d60"},
+      {n:"Honorarios agencia",a:agency,c:"#c0392b"}
+    ];
+  } else if(port==='Motril'){
+    var pr=f2(lookupT(gt,MOT_PRAC_GT,MOT_PRAC_T));
+    var am=f2(lookupT(gt,MOT_AMAR_GT,MOT_AMAR_T));
+    var tug=tugs?170:0;
+    var resid=gt<=2500?156:gt<=25000?0:gt<=100000?1248:2496;
+    items=[
+      {n:"Practicaje",a:pr,c:"#1a6b8a"},
+      {n:"Amarradores (In & Out)",a:am,c:"#1a6b8a"},
+      {n:"Remolcadores",a:tug,c:"#e8a838"},
+      {n:"Tasa Residuos",a:resid,c:"#0f3460"},
+      {n:"Ship's clearance",a:209.10,c:"#2a9d60"},
+      {n:"ISPS",a:0,c:"#2a9d60"},
+      {n:"Comunicaciones",a:180.02,c:"#2a9d60"},
+      {n:"Honorarios agencia",a:agency,c:"#c0392b"}
+    ];
+  } else {
+    var pr=f2(lookupT(gt,CRS_PRAC_GT,CRS_PRAC_T)*2);
+    var am=f2(lookupT(gt,CRS_AMAR_GT,CRS_AMAR_T));
+    var tug=tugs?f2(lookupT(gt,CRS_TUGS_GT,CRS_TUGS_T)):0;
+    items=[
+      {n:"Practicaje (In & Out)",a:pr,c:"#1a6b8a"},
+      {n:"Amarradores (In & Out)",a:am,c:"#1a6b8a"},
+      {n:"Remolcadores",a:tug,c:"#e8a838"},
+      {n:"Tasa Residuos",a:f2(gt*0.03175),c:"#0f3460"},
+      {n:"ISPS",a:0,c:"#2a9d60"},
+      {n:"Honorarios agencia",a:agency,c:"#c0392b"}
+    ];
+  }
+  return items;
+}
+
+// STATE
+var msalApp=null,token=null,user=null,escalas=[],current=null,curTab='inicio',sofSel=null;
+
+function defE(b){
+  return {id:null,spId:null,vessel:b.vessel||'',port:b.port||'Almería',op:b.op||'UNLOADING',cargo:b.cargo||'CEMENT',tons:b.tons||0,status:'Prevista',createdAt:new Date().toISOString(),createdBy:user?user.name:'',
+    buque:{imo:'',gt:b.gt||'',loa:b.loa||'',flag:'',callsign:'',captain:'',berth:'',lastPort:'',nextPort:'',eta:b.eta||'',etb:'',etc:'',etd:b.etd||'',hours:b.days||'1',crewIn:'0',crewOut:'0',paxIn:'0',paxOut:'0',tugs:b.tugs!==undefined?b.tugs:true,intl:true,cruise:false,fo:'0',doo:'0',lo:'0',fw:'0',fwd:'0',aft:'0'},
+    sof:[],arrival:{eosp:'',norT:'',norA:'',anchor:'',heaved:'',pilotIn:'',firstLine:'',allFast:'',gangway:'',tugs:'2',dischStart:'',etc2:'',tanks:'',hoses:''},
+    sailing:{dischStart:'',dischEnd:'',ullage:'',calcs:'',qty1:'0',bl1:'0',bl2:'0',pilotOut:'',sailed:'',nextPort:'',etaNext:'',fo:'0',doo:'0'},
+    srs:{checked:{},libre:''}};
+}
+
+// MSAL
+var msalConfig={auth:{clientId:CLIENT_ID,authority:'https://login.microsoftonline.com/'+TENANT_ID,redirectUri:window.location.href.split('?')[0].split('#')[0]},cache:{cacheLocation:'sessionStorage'}};
+
+function getToken(){
+  return msalApp.acquireTokenSilent({scopes:SCOPES,account:msalApp.getActiveAccount()}).then(function(r){return r.accessToken;}).catch(function(){return msalApp.acquireTokenRedirect({scopes:SCOPES});});
+}
+
+function spReq(url,method,body){
+  return getToken().then(function(tok){
+    if(!tok)return null;
+    var opts={method:method||'GET',headers:{'Authorization':'Bearer '+tok,'Accept':'application/json;odata=nometadata','Content-Type':'application/json;odata=nometadata'}};
+    if(body)opts.body=JSON.stringify(body);
+    return fetch(url,opts).then(function(r){
+      if(!r.ok)return r.text().then(function(t){throw new Error('SP Error '+r.status+': '+t);});
+      if(method==='DELETE'||r.status===204)return null;
+      return r.json();
+    });
+  });
+}
+
+function loadEscalas(){
+  setSyncing(true);
+  var url=SP_BASE+'/_api/web/lists/getbytitle(\''+SP_LIST+'\')/items?$select=Id,Title,vessel,port,op,cargo,tons,status,eta,gt,loa,data,Created,Author/Title&$expand=Author&$orderby=Created desc&$top=200';
+  return spReq(url).then(function(r){
+    escalas=(r.value||[]).map(function(item){
+      var d={};try{d=JSON.parse(item.data||'{}');}catch(e){}
+      return {id:item.Id.toString(),spId:item.Id,vessel:item.vessel||item.Title||'',port:item.port||'Almería',op:item.op||'UNLOADING',cargo:item.cargo||'CEMENT',tons:item.tons||0,status:item.status||'Prevista',createdAt:d.createdAt||item.Created||'',createdBy:d.createdBy||'',buque:d.buque||defE({}).buque,sof:d.sof||[],arrival:d.arrival||defE({}).arrival,sailing:d.sailing||defE({}).sailing,srs:d.srs||{checked:{},libre:''}};
+    });
+    setSyncing(false);
+  }).catch(function(e){setSyncing(false,true);toast('Error: '+e.message);});
+}
+
+function saveEscala(e){
+  setSyncing(true);
+  var dj=JSON.stringify({buque:e.buque,sof:e.sof,arrival:e.arrival,sailing:e.sailing,srs:e.srs,createdBy:e.createdBy,createdAt:e.createdAt});
+  var body={Title:e.vessel||'Sin nombre',vessel:e.vessel||'',port:e.port||'',op:e.op||'',cargo:e.cargo||'',tons:parseFloat(e.tons)||0,status:e.status||'Prevista',eta:e.buque.eta||null,gt:parseFloat(e.buque.gt)||0,loa:parseFloat(e.buque.loa)||0,data:dj};
+  var p;
+  if(!e.spId){
+    var url=SP_BASE+'/_api/web/lists/getbytitle(\''+SP_LIST+'\')/items';
+    p=spReq(url,'POST',body).then(function(r){e.spId=r.Id;e.id=r.Id.toString();var idx=escalas.findIndex(function(x){return x===e;});if(idx>=0)escalas[idx]=e;else escalas.unshift(e);});
+  } else {
+    var url=SP_BASE+'/_api/web/lists/getbytitle(\''+SP_LIST+'\')/items('+e.spId+')';
+    p=getToken().then(function(tok){
+      return fetch(url,{method:'PATCH',headers:{'Authorization':'Bearer '+tok,'Accept':'application/json;odata=nometadata','Content-Type':'application/json;odata=nometadata','IF-MATCH':'*','X-HTTP-Method':'MERGE'},body:JSON.stringify(body)}).then(function(){var idx=escalas.findIndex(function(x){return x.spId===e.spId;});if(idx>=0)escalas[idx]=e;});
+    });
+  }
+  return p.then(function(){setSyncing(false);toast('Guardado ✓');}).catch(function(err){setSyncing(false,true);toast('Error: '+err.message);});
+}
+
+function deleteEscala(e){
+  if(!confirm('¿Eliminar esta escala?'))return;
+  if(e.spId){
+    getToken().then(function(tok){fetch(SP_BASE+'/_api/web/lists/getbytitle(\''+SP_LIST+'\')/items('+e.spId+')',{method:'DELETE',headers:{'Authorization':'Bearer '+tok,'IF-MATCH':'*'}});});
+  }
+  escalas=escalas.filter(function(x){return x.id!==e.id;});
+  current=null;navTo('inicio','nav-inicio');
+}
+
+function setSyncing(on,err){
+  var dot=document.getElementById('sync-dot');var txt=document.getElementById('sync-txt');
+  if(!dot)return;
+  dot.className='sync-dot'+(on?' syncing':err?' error':'');
+  txt.textContent=on?'Guardando…':err?'Error':'';
+}
+
+// HELPERS
+function fv(s,k){return current&&current[s]?current[s][k]||'':(current?current[k]||'':'');}
+function ea(s){return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function getDays(e){return parseFloat((e.buque.hours||'1'))||1;}
+
+function relDate(dtStr){
+  if(!dtStr)return {l1:'—',l2:'',c:'var(--tl)'};
+  var d=new Date(dtStr),now=new Date(),diffH=Math.round((d-now)/3600000),diffD=Math.round((d-now)/86400000);
+  var t=d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}),dt=d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});
+  if(d-now<0&&diffH>-2)return {l1:'Ahora',l2:t,c:'var(--ok)'};
+  if(d-now<0)return {l1:dt,l2:t,c:'var(--tl)'};
+  if(diffH<1)return {l1:'<1h',l2:t,c:'var(--err)'};
+  if(diffH<6)return {l1:diffH+'h',l2:t,c:'var(--warn)'};
+  if(diffH<24)return {l1:'Hoy',l2:t,c:'var(--navy)'};
+  if(diffD===1)return {l1:'Mañana',l2:t,c:'var(--sea)'};
+  if(diffD<7)return {l1:diffD+'d',l2:dt,c:'var(--tm)'};
+  return {l1:dt,l2:t,c:'var(--tl)'};
+}
+
+var saveT;
+function autoSave(){clearTimeout(saveT);saveT=setTimeout(function(){if(current)saveEscala(current);},1200);}
+
+function makeRow(lbl,inp){var d=document.createElement('div');d.className='row';var l=document.createElement('div');l.className='lbl';l.textContent=lbl;d.appendChild(l);d.appendChild(inp);return d;}
+function makeInp(val,onch,type){var i=document.createElement('input');i.className='inp';i.value=val||'';i.type=type||'text';if(onch)i.addEventListener('change',onch);return i;}
+function makeSel(opts,val,onch){var s=document.createElement('select');s.className='sel';opts.forEach(function(o){var op=document.createElement('option');op.value=o.v||o;op.textContent=o.l||o;if((o.v||o)===val)op.selected=true;s.appendChild(op);});if(onch)s.addEventListener('change',onch);return s;}
+function makeTgl(on,onch){var w=document.createElement('div');w.className='tgl-wrap';var b=document.createElement('button');b.className='tgl'+(on?' on':'');b.addEventListener('click',function(){b.classList.toggle('on');lbl.textContent=b.classList.contains('on')?'Sí':'No';if(onch)onch(b.classList.contains('on'));});var lbl=document.createElement('span');lbl.style.cssText='font-size:11px;color:var(--tm);min-width:20px';lbl.textContent=on?'Sí':'No';w.appendChild(b);w.appendChild(lbl);return w;}
+function makeCard(rows){var c=document.createElement('div');c.className='card';rows.forEach(function(r){c.appendChild(r);});return c;}
+function makeSec(txt){var s=document.createElement('div');s.className='sec';var sp=document.createElement('span');sp.textContent=txt;s.appendChild(sp);return s;}
+function makeBtn(txt,cls,fn){var b=document.createElement('button');b.className='btn '+cls;b.textContent=txt;b.addEventListener('click',fn);return b;}
+
+// NAVIGATION
+function navTo(tab,navId){
+  curTab=tab;
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  var nav=document.getElementById(navId);if(nav)nav.classList.add('on');
+  var titles={inicio:'Consignaciones',buque:'Buque',sof:'SOF',pda:'PDA',docs:'Documentos',srs:'Servicios',arrival:'Arrival Report',sailing:'Sailing Report',historico:'Histórico'};
+  document.getElementById('hdr-title').textContent=titles[tab]||'Consignaciones';
+  document.getElementById('hdr-sub').textContent=(current&&tab!=='inicio'&&tab!=='historico')?current.vessel+' · '+current.port:'S.A. López Guillén';
+  renderTab();
+}
+
+function renderTab(){
+  var body=document.getElementById('app-body');
+  body.innerHTML='';
+  if(curTab==='inicio')renderInicio();
+  else if(curTab==='buque')renderBuque();
+  else if(curTab==='pda')renderPda();
+  else if(curTab==='sof')renderSof();
+  else if(curTab==='srs')renderSrs();
+  else if(curTab==='arrival')renderArrival();
+  else if(curTab==='sailing')renderSailing();
+  else if(curTab==='docs')renderDocs();
+  else if(curTab==='historico')renderHistorico();
+}
+
+// INICIO
+function renderInicio(){
+  var body=document.getElementById('app-body');
+  var now=new Date();
+  escalas.forEach(function(e){
+    var eta=e.buque.eta?new Date(e.buque.eta):null;
+    var etd=e.buque.etd?new Date(e.buque.etd):null;
+    if(eta&&etd&&now>=eta&&now<=etd)e.status='En Puerto';
+    else if(etd&&now>etd&&e.status==='En Puerto')e.status='Completada';
+    else if(eta&&now<eta&&e.status==='En Puerto')e.status='Prevista';
+  });
+  var prev=escalas.filter(function(e){return e.status==='Prevista';}).sort(function(a,b){return new Date(a.buque.eta||0)-new Date(b.buque.eta||0);});
+  var enp=escalas.filter(function(e){return e.status==='En Puerto';});
+  var comp=escalas.filter(function(e){return e.status==='Completada';}).slice(0,3);
+
+  function makeHdr(txt,btn){var d=document.createElement('div');d.className='section-hdr';var t=document.createElement('div');t.className='section-t';t.textContent=txt;d.appendChild(t);if(btn)d.appendChild(btn);return d;}
+  var newBtn=makeBtn('+ Nueva','btn bp',function(){goNew();});
+  newBtn.style.cssText='flex:0 0 auto;padding:7px 12px;font-size:12px';
+  body.appendChild(makeHdr('🛳 Pendientes de llegada ('+prev.length+')',newBtn));
+  body.appendChild(makeGroupTable(prev,'Sin escalas previstas'));
+  body.appendChild(makeHdr('⚓ En puerto ahora ('+enp.length+')'));
+  body.appendChild(makeGroupTable(enp,'Ningún buque en puerto'));
+  var compHdr=makeHdr('📋 Últimas completadas');
+  var verTodo=document.createElement('div');verTodo.className='section-a';verTodo.textContent='Ver todo →';verTodo.addEventListener('click',function(){navTo('historico','');});
+  compHdr.appendChild(verTodo);
+  body.appendChild(compHdr);
+  body.appendChild(makeGroupTable(comp,'Sin escalas completadas'));
+}
+
+function makeGroupTable(arr,emptyTxt){
+  if(!arr.length){var d=document.createElement('div');d.className='empty';d.textContent=emptyTxt;return d;}
+  var wrap=document.createElement('div');
+  wrap.style.cssText='margin:0 12px 10px;background:var(--surf);border-radius:var(--r);border:0.5px solid var(--b);overflow:hidden';
+  // Header row
+  var hdr=document.createElement('div');
+  hdr.style.cssText='display:grid;grid-template-columns:1fr 70px 55px 65px 65px;padding:6px 10px;border-bottom:0.5px solid var(--b);background:var(--surf2)';
+  ['Buque / Mercancía','Puerto','Tn','ETA','ETD'].forEach(function(t){var c=document.createElement('div');c.style.cssText='font-size:10px;font-weight:600;color:var(--tm);text-transform:uppercase;text-align:'+(t==='Buque / Mercancía'?'left':'right');c.textContent=t;hdr.appendChild(c);});
+  wrap.appendChild(hdr);
+  arr.forEach(function(e){
+    var row=document.createElement('div');
+    row.style.cssText='display:grid;grid-template-columns:1fr 70px 55px 65px 65px;padding:9px 10px;border-bottom:0.5px solid var(--b);cursor:pointer;align-items:center';
+    row.addEventListener('click',function(){openEscala(e.id);});
+    row.addEventListener('mouseover',function(){row.style.background='var(--surf2)';});
+    row.addEventListener('mouseout',function(){row.style.background='';});
+    // Col 1: nombre + cargo
+    var c1=document.createElement('div');
+    var nm=document.createElement('div');nm.style.cssText='font-size:13px;font-weight:600;color:var(--t)';nm.textContent=e.vessel||'Sin nombre';
+    var meta=document.createElement('div');meta.style.cssText='font-size:11px;color:var(--tm);margin-top:1px';meta.textContent=e.cargo+(e.status!=='Prevista'?' · '+e.status:'');
+    c1.appendChild(nm);c1.appendChild(meta);row.appendChild(c1);
+    // Col 2: puerto
+    var c2=document.createElement('div');c2.style.cssText='font-size:11px;color:var(--tm);text-align:right';c2.textContent=e.port;row.appendChild(c2);
+    // Col 3: tons
+    var c3=document.createElement('div');c3.style.cssText='font-size:12px;font-weight:500;text-align:right';c3.textContent=e.tons||'—';row.appendChild(c3);
+    // Col 4: ETA
+    var er=relDate(e.buque.eta);
+    var c4=document.createElement('div');c4.style.cssText='text-align:right';
+    var l1=document.createElement('div');l1.style.cssText='font-size:11px;font-weight:600;color:'+er.c;l1.textContent=er.l1;
+    var l2=document.createElement('div');l2.style.cssText='font-size:10px;color:var(--tl)';l2.textContent=er.l2;
+    c4.appendChild(l1);c4.appendChild(l2);row.appendChild(c4);
+    // Col 5: ETD
+    var dr=relDate(e.buque.etd);
+    var c5=document.createElement('div');c5.style.cssText='text-align:right';
+    var d1=document.createElement('div');d1.style.cssText='font-size:11px;font-weight:600;color:'+dr.c;d1.textContent=dr.l1;
+    var d2=document.createElement('div');d2.style.cssText='font-size:10px;color:var(--tl)';d2.textContent=dr.l2;
+    c5.appendChild(d1);c5.appendChild(d2);row.appendChild(c5);
+    wrap.appendChild(row);
+  });
+  return wrap;
+}
+
+function renderHistorico(){
+  var body=document.getElementById('app-body');
+  var comp=escalas.filter(function(e){return e.status==='Completada';});
+  var info=document.createElement('div');info.style.cssText='padding:8px 12px 4px;font-size:12px;color:var(--tm)';info.textContent=comp.length+' escala'+(comp.length!==1?'s':'')+' completada'+(comp.length!==1?'s':'');
+  body.appendChild(info);
+  body.appendChild(makeGroupTable(comp,'Sin escalas completadas'));
+}
+
+function openEscala(id){
+  current=escalas.find(function(e){return e.id===id;});
+  if(!current)return;
+  navTo('buque','nav-buque');
+}
+
+// NUEVA ESCALA
+function goNew(){
+  current=null;curTab='new';
+  document.getElementById('hdr-title').textContent='Nueva escala';
+  document.getElementById('hdr-sub').textContent='';
+  var body=document.getElementById('app-body');
+  body.innerHTML='';
+
+  var wrap=document.createElement('div');
+  var sec=makeSec('Nueva escala');wrap.appendChild(sec);
+
+  var vesselInp=makeInp('',null,'text');vesselInp.placeholder='M/V nombre';vesselInp.id='n-vessel';
+  var gtInp=makeInp('',null,'number');gtInp.placeholder='ej. 3779';
+  var loaInp=makeInp('',null,'number');loaInp.placeholder='ej. 95.8';
+  var portSel=makeSel(['Almería','Carboneras','Motril','Endesa Terminal','Sagunto','Garrucha'],'Almería',null);portSel.id='n-port';
+  var opSel=makeSel([{v:'UNLOADING',l:'Descarga'},{v:'LOADING',l:'Carga'},{v:'BUNKERING',l:'Bunkering'},{v:'TRANSIT',l:'Tránsito'}],'UNLOADING',null);
+  var cargoSel=makeSel(['CEMENT','GYPSUM','CLINKER','STEAM COAL','CALCIUM CARBONATE','IRON SILICATE','SAWN WOOD','STEEL PIPES','MARBLE','SALT','ANHYDRITE','COKE'],'CEMENT',null);
+  var tonsInp=makeInp('0',null,'number');
+  var now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  var etaInp=makeInp(now.toISOString().slice(0,16),null,'datetime-local');
+  var daysInp=makeInp('1',null,'number');
+  var hoursInp=makeInp('0',null,'number');
+  var tugsTgl=makeTgl(true,null);
+
+  var card=makeCard([
+    makeRow('Nombre buque',vesselInp),makeRow('GT',gtInp),makeRow('Eslora (LOA)',loaInp),
+    makeRow('Puerto',portSel),makeRow('Operación',opSel),makeRow('Mercancía',cargoSel),
+    makeRow('Toneladas',tonsInp),makeRow('ETA',etaInp),makeRow('Días en puerto',daysInp),
+    makeRow('Horas adicionales',hoursInp),makeRow('Remolcadores',tugsTgl)
+  ]);
+  wrap.appendChild(card);
+
+  var btnRow=document.createElement('div');btnRow.className='btns';
+  var cancelBtn=makeBtn('Cancelar','bg2',function(){navTo('inicio','nav-inicio');});
+  var createBtn=makeBtn('Crear escala','bp',function(){
+    var v=vesselInp.value.trim();if(!v){toast('Escribe el nombre del buque');return;}
+    var days=parseInt(daysInp.value)||1;
+    var hours=parseInt(hoursInp.value)||0;
+    var eta=etaInp.value;
+    var etd='';
+    if(eta){var d=new Date(eta);d.setDate(d.getDate()+days);d.setHours(d.getHours()+hours);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());etd=d.toISOString().slice(0,16);}
+    var tugs=tugsTgl.querySelector('.tgl').classList.contains('on');
+    var e=defE({vessel:v,port:portSel.value,op:opSel.value,cargo:cargoSel.value,tons:tonsInp.value||0,eta:eta,gt:gtInp.value,loa:loaInp.value,days:daysInp.value,tugs:tugs});
+    e.buque.etd=etd;
+    escalas.unshift(e);current=e;
+    saveEscala(e);navTo('buque','nav-buque');
+  });
+  btnRow.appendChild(cancelBtn);btnRow.appendChild(createBtn);
+  wrap.appendChild(btnRow);
+  body.appendChild(wrap);
+}
+
+// BUQUE TAB
+function renderBuque(){
+  if(!current){renderInicio();return;}
+  var body=document.getElementById('app-body');
+  var wrap=document.createElement('div');
+
+  // Sub-tabs
+  var tabs=document.createElement('div');tabs.style.cssText='display:flex;gap:6px;padding:8px 12px 4px;overflow-x:auto;scrollbar-width:none';
+  [{k:'buque',l:'Buque'},{k:'srs',l:'Servicios'},{k:'arrival',l:'Arrival'},{k:'sailing',l:'Sailing'}].forEach(function(t){
+    var b=document.createElement('button');b.style.cssText='padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:0.5px solid '+(curTab===t.k?'var(--navy)':'var(--b2)')+';background:'+(curTab===t.k?'var(--navy)':'var(--surf)')+';color:'+(curTab===t.k?'#fff':'var(--tm)')+';white-space:nowrap;font-family:inherit';
+    b.textContent=t.l;b.addEventListener('click',function(){navTo(t.k,'nav-buque');});tabs.appendChild(b);
+  });
+  wrap.appendChild(tabs);
+
+  var b=current.buque;
+  function ch(s,k){return function(){current[s][k]=this.value;autoSave();};}
+  function chTop(k){return function(){current[k]=this.value;document.getElementById('hdr-sub').textContent=current.vessel+' · '+current.port;autoSave();};}
+
+  wrap.appendChild(makeSec('Identificación'));
+  var vesselI=makeInp(current.vessel,null);vesselI.addEventListener('change',function(){current.vessel=this.value;document.getElementById('hdr-sub').textContent=current.vessel+' · '+current.port;autoSave();});
+  wrap.appendChild(makeCard([makeRow('Nombre buque',vesselI),makeRow('IMO',makeInp(b.imo,function(){b.imo=this.value;autoSave();})),makeRow('GT',makeInp(b.gt,function(){b.gt=this.value;autoSave();},'number')),makeRow('Eslora (LOA)',makeInp(b.loa,function(){b.loa=this.value;autoSave();},'number')),makeRow('Pabellón',makeInp(b.flag,function(){b.flag=this.value;autoSave();})),makeRow('Call Sign',makeInp(b.callsign,function(){b.callsign=this.value;autoSave();})),makeRow('Capitán',makeInp(b.captain,function(){b.captain=this.value;autoSave();}))]));
+
+  wrap.appendChild(makeSec('Servicios clave'));
+  var tug1=makeTgl(b.tugs,function(v){b.tugs=v;autoSave();});
+  var intl1=makeTgl(b.intl,function(v){b.intl=v;autoSave();});
+  var cru1=makeTgl(b.cruise,function(v){b.cruise=v;autoSave();});
+  wrap.appendChild(makeCard([makeRow('Remolcadores',tug1),makeRow('Viaje internacional',intl1),makeRow('Crucero',cru1)]));
+
+  wrap.appendChild(makeSec('Escala'));
+  var portS=makeSel(['Almería','Carboneras','Motril','Endesa Terminal','Sagunto','Garrucha'],current.port,function(){current.port=this.value;document.getElementById('hdr-sub').textContent=current.vessel+' · '+current.port;autoSave();});
+  var opS=makeSel([{v:'UNLOADING',l:'Descarga'},{v:'LOADING',l:'Carga'},{v:'BUNKERING',l:'Bunkering'},{v:'TRANSIT',l:'Tránsito'}],current.op,function(){current.op=this.value;autoSave();});
+  var cargoS=makeSel(['CEMENT','GYPSUM','CLINKER','STEAM COAL','CALCIUM CARBONATE','IRON SILICATE','SAWN WOOD','STEEL PIPES','MARBLE','SALT','ANHYDRITE','COKE'],current.cargo,function(){current.cargo=this.value;autoSave();});
+  var tonsI=makeInp(current.tons,function(){current.tons=this.value;autoSave();},'number');
+  wrap.appendChild(makeCard([makeRow('Puerto',portS),makeRow('Operación',opS),makeRow('Mercancía',cargoS),makeRow('Toneladas',tonsI),makeRow('Muelle',makeInp(b.berth,function(){b.berth=this.value;autoSave();})),makeRow('Puerto anterior',makeInp(b.lastPort,function(){b.lastPort=this.value;autoSave();})),makeRow('Puerto siguiente',makeInp(b.nextPort,function(){b.nextPort=this.value;autoSave();}))]));
+
+  wrap.appendChild(makeSec('Tiempos'));
+  wrap.appendChild(makeCard([makeRow('ETA',makeInp(b.eta,function(){b.eta=this.value;autoSave();},'datetime-local')),makeRow('ETB',makeInp(b.etb,function(){b.etb=this.value;autoSave();},'datetime-local')),makeRow('ETC',makeInp(b.etc,function(){b.etc=this.value;autoSave();},'datetime-local')),makeRow('ETD',makeInp(b.etd,function(){b.etd=this.value;autoSave();},'datetime-local')),makeRow('Días en puerto',makeInp(b.hours,function(){b.hours=this.value;autoSave();},'number'))]));
+
+  wrap.appendChild(makeSec('Tripulación'));
+  wrap.appendChild(makeCard([makeRow('Trip. llegada',makeInp(b.crewIn,function(){b.crewIn=this.value;autoSave();},'number')),makeRow('Trip. salida',makeInp(b.crewOut,function(){b.crewOut=this.value;autoSave();},'number')),makeRow('Pasajeros IN',makeInp(b.paxIn,function(){b.paxIn=this.value;autoSave();},'number')),makeRow('Pasajeros OUT',makeInp(b.paxOut,function(){b.paxOut=this.value;autoSave();},'number'))]));
+
+  wrap.appendChild(makeSec('Bunkers y calados'));
+  wrap.appendChild(makeCard([makeRow('FO',makeInp(b.fo,function(){b.fo=this.value;autoSave();},'number')),makeRow('DO',makeInp(b.doo,function(){b.doo=this.value;autoSave();},'number')),makeRow('LO',makeInp(b.lo,function(){b.lo=this.value;autoSave();},'number')),makeRow('FW',makeInp(b.fw,function(){b.fw=this.value;autoSave();},'number')),makeRow('Calado proa',makeInp(b.fwd,function(){b.fwd=this.value;autoSave();},'number')),makeRow('Calado popa',makeInp(b.aft,function(){b.aft=this.value;autoSave();},'number'))]));
+
+  wrap.appendChild(makeSec('Estado'));
+  var stS=makeSel(['Prevista','En Puerto','Completada'],current.status,function(){current.status=this.value;autoSave();});
+  wrap.appendChild(makeCard([makeRow('Estado escala',stS)]));
+
+  var btnRow=document.createElement('div');btnRow.className='btns';
+  btnRow.appendChild(makeBtn('💾 Guardar','bp',function(){saveEscala(current);}));
+  var delB=makeBtn('🗑','bd',function(){deleteEscala(current);});delB.style.flex='0 0 auto';delB.style.padding='12px';
+  btnRow.appendChild(delB);
+  wrap.appendChild(btnRow);
+  body.appendChild(wrap);
+}
+
+// PDA TAB
+function renderPda(){
+  if(!current){renderInicio();return;}
+  var body=document.getElementById('app-body');
+  var days=getDays(current);
+  var items=calcPDA(current.port,current.buque.gt,current.buque.loa,current.buque.tugs,current.tons,days);
+  var tot=items.reduce(function(s,i){return s+(i.a||0);},0);
+
+  var hero=document.createElement('div');hero.className='pda-hero';
+  hero.innerHTML='<div class="pda-lbl">Proforma — '+current.port+'</div><div class="pda-amt">'+tot.toLocaleString('es-ES',{style:'currency',currency:'EUR',minimumFractionDigits:2})+'</div><div class="pda-sub">GT '+(current.buque.gt||'—')+' · '+(current.buque.tugs?'Con remolcadores':'Sin remolcadores')+' · '+days+' día'+(days!==1?'s':'')+'</div>';
+  body.appendChild(hero);
+
+  if(!current.buque.gt){var w=document.createElement('div');w.style.cssText='padding:4px 12px 6px;font-size:11px;color:var(--warn)';w.textContent='⚠ Introduce el GT en la pestaña Buque para calcular tarifas reales.';body.appendChild(w);}
+
+  var card=document.createElement('div');card.className='card';
+  items.forEach(function(item){
+    var row=document.createElement('div');row.className='ci';
+    var dot=document.createElement('div');dot.className='cdot';dot.style.background=item.c;
+    var name=document.createElement('div');name.className='cn';name.textContent=item.n;
+    var amt=document.createElement('div');amt.className='ca';amt.textContent=(item.a||0).toLocaleString('es-ES',{style:'currency',currency:'EUR',minimumFractionDigits:2});
+    row.appendChild(dot);row.appendChild(name);row.appendChild(amt);card.appendChild(row);
+  });
+  body.appendChild(card);
+
+  var btnRow=document.createElement('div');btnRow.className='btns';
+  btnRow.appendChild(makeBtn('💾 Guardar PDA','bp',function(){saveEscala(current);}));
+  btnRow.appendChild(makeBtn('✉ Enviar','bs',function(){toast('Enviada ✓');}));
+  body.appendChild(btnRow);
+}
+
+// SOF TAB
+function renderSof(){
+  if(!current){renderInicio();return;}
+  var body=document.getElementById('app-body');
+  var card=document.createElement('div');card.className='card';card.style.marginTop='8px';card.id='sof-card';
+  body.appendChild(card);
+  renderSofRows();
+  var addBtn=makeBtn('+ Añadir evento SOF','bp',openSofModal);
+  addBtn.style.cssText='margin:8px 12px;width:calc(100% - 24px)';
+  body.appendChild(addBtn);
+}
+
+function renderSofRows(){
+  var card=document.getElementById('sof-card');if(!card)return;
+  card.innerHTML='';
+  if(!current.sof.length){var e=document.createElement('div');e.style.cssText='padding:24px;text-align:center;font-size:12px;color:var(--tl)';e.textContent='Sin eventos SOF. Pulsa el botón para añadir.';card.appendChild(e);return;}
+  current.sof.forEach(function(ev,i){
+    var row=document.createElement('div');row.className='sof-row';
+    var tc=document.createElement('div');tc.className='sof-tc';
+    var d=new Date(ev.dt);
+    var dd=document.createElement('div');dd.className='sof-d';dd.textContent=d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit'});
+    var dt=document.createElement('div');dt.className='sof-t';dt.textContent=d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'});
+    tc.appendChild(dd);tc.appendChild(dt);
+    var ev_=document.createElement('div');ev_.className='sof-ev';ev_.textContent=ev.ev;
+    var del=document.createElement('button');del.className='del-btn';del.textContent='✕';
+    del.addEventListener('click',function(){current.sof.splice(i,1);saveEscala(current);renderSofRows();});
+    row.appendChild(tc);row.appendChild(ev_);row.appendChild(del);
+    card.appendChild(row);
+  });
+}
+
+function openSofModal(){
+  var existing=document.getElementById('sof-modal');if(existing)existing.remove();
+  var overlay=document.createElement('div');overlay.id='sof-modal';overlay.className='modal-bg';
+  overlay.addEventListener('click',function(e){if(e.target===overlay){overlay.remove();sofSel=null;}});
+  var sheet=document.createElement('div');sheet.className='modal-sheet';
+  var handle=document.createElement('div');handle.className='modal-handle';
+  var title=document.createElement('div');title.className='modal-t';title.textContent='Añadir evento SOF';
+  sheet.appendChild(handle);sheet.appendChild(title);
+
+  var now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+  var dtCard=document.createElement('div');dtCard.className='card';dtCard.style.cssText='margin:0 0 8px';
+  var dtRow=document.createElement('div');dtRow.className='row';
+  var dtLbl=document.createElement('div');dtLbl.className='lbl';dtLbl.textContent='Fecha y hora';
+  var dtInp=document.createElement('input');dtInp.className='inp';dtInp.type='datetime-local';dtInp.value=now.toISOString().slice(0,16);dtInp.id='sof-dt-inp';
+  dtRow.appendChild(dtLbl);dtRow.appendChild(dtInp);dtCard.appendChild(dtRow);
+  sheet.appendChild(dtCard);
+
+  var list=document.createElement('div');list.className='modal-list';
+  SOF_LIST.forEach(function(ev){
+    var btn=document.createElement('button');btn.className='mopt';btn.textContent=ev;
+    btn.addEventListener('click',function(){list.querySelectorAll('.mopt').forEach(function(o){o.classList.remove('on');});btn.classList.add('on');sofSel=ev;});
+    list.appendChild(btn);
+  });
+  sheet.appendChild(list);
+
+  var btnRow=document.createElement('div');btnRow.style.cssText='display:flex;gap:8px;margin-top:10px;flex-shrink:0';
+  var cancelB=makeBtn('Cancelar','bg2',function(){overlay.remove();sofSel=null;});cancelB.style.flex='1';
+  var addB=makeBtn('Añadir','bp',function(){
+    if(!sofSel){toast('Selecciona un evento');return;}
+    var dt=document.getElementById('sof-dt-inp');if(!dt||!dt.value){toast('Indica fecha y hora');return;}
+    current.sof.push({dt:dt.value,ev:sofSel});current.sof.sort(function(a,b){return a.dt.localeCompare(b.dt);});
+    overlay.remove();sofSel=null;saveEscala(current);renderSofRows();
+  });addB.style.flex='1';
+  btnRow.appendChild(cancelB);btnRow.appendChild(addB);
+  sheet.appendChild(btnRow);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+}
+
+// SRS TAB
+function renderSrs(){
+  if(!current){renderInicio();return;}
+  var body=document.getElementById('app-body');
+  SRS_CATS.forEach(function(cat){
+    body.appendChild(makeSec(cat.cat));
+    var card=document.createElement('div');card.className='card';
+    cat.items.forEach(function(item){
+      var key=cat.cat+'::'+item;var on=current.srs.checked[key];
+      var row=document.createElement('div');row.className='srs-item';
+      var chk=document.createElement('div');chk.className='srs-check'+(on?' on':'');chk.textContent='✓';
+      chk.addEventListener('click',function(){
+        current.srs.checked[key]=!current.srs.checked[key];
+        chk.classList.toggle('on',current.srs.checked[key]);
+        autoSave();renderSrs();
+      });
+      var info=document.createElement('div');info.style.flex='1';
+      var nm=document.createElement('div');nm.style.cssText='font-size:13px';nm.textContent=item;
+      info.appendChild(nm);
+      if(on){var nota=document.createElement('input');nota.style.cssText='font-size:11px;color:var(--tm);border:none;background:transparent;outline:none;width:100%;padding:2px 0;font-family:inherit';nota.placeholder='Notas…';nota.value=current.srs.checked[key+'_nota']||'';nota.addEventListener('change',function(){current.srs.checked[key+'_nota']=this.value;autoSave();});info.appendChild(nota);}
+      row.appendChild(chk);row.appendChild(info);card.appendChild(row);
+    });
+    body.appendChild(card);
+  });
+  body.appendChild(makeSec('Otros servicios'));
+  var libreCard=document.createElement('div');libreCard.className='card';
+  var libreRow=document.createElement('div');libreRow.className='row';
+  var ta=document.createElement('textarea');ta.className='inp';ta.style.cssText='text-align:left;resize:none;height:80px;padding:10px 0';ta.placeholder='Servicios adicionales…';ta.textContent=current.srs.libre||'';
+  ta.addEventListener('change',function(){current.srs.libre=this.value;autoSave();});
+  libreRow.appendChild(ta);libreCard.appendChild(libreRow);body.appendChild(libreCard);
+  var btnRow=document.createElement('div');btnRow.className='btns';
+  btnRow.appendChild(makeBtn('💾 Guardar SRS','bp',function(){saveEscala(current);}));
+  btnRow.appendChild(makeBtn('✉ Generar','bs',genSRS));
+  body.appendChild(btnRow);
+}
+
+// ARRIVAL TAB
+function renderArrival(){
+  if(!current){renderInicio();return;}
+  var body=document.getElementById('app-body');var a=current.arrival;
+  body.appendChild(makeSec('Fondeadero'));
+  body.appendChild(makeCard([makeRow('EOSP',makeInp(a.eosp,function(){a.eosp=this.value;autoSave();},'datetime-local')),makeRow('NOR tendered',makeInp(a.norT,function(){a.norT=this.value;autoSave();},'datetime-local')),makeRow('NOR accepted',makeInp(a.norA,function(){a.norA=this.value;autoSave();},'datetime-local')),makeRow('Dropped Anchor',makeInp(a.anchor,function(){a.anchor=this.value;autoSave();},'datetime-local')),makeRow('Anchor Heaved up',makeInp(a.heaved,function(){a.heaved=this.value;autoSave();},'datetime-local'))]));
+  body.appendChild(makeSec('Atraque'));
+  body.appendChild(makeCard([makeRow('Pilot on board (IN)',makeInp(a.pilotIn,function(){a.pilotIn=this.value;autoSave();},'datetime-local')),makeRow('First Line Ashore',makeInp(a.firstLine,function(){a.firstLine=this.value;autoSave();},'datetime-local')),makeRow('All Fast Alongside',makeInp(a.allFast,function(){a.allFast=this.value;autoSave();},'datetime-local')),makeRow('Gangway Down',makeInp(a.gangway,function(){a.gangway=this.value;autoSave();},'datetime-local')),makeRow('Nº Remolcadores',makeInp(a.tugs,function(){a.tugs=this.value;autoSave();},'number'))]));
+  body.appendChild(makeSec('Operaciones'));
+  body.appendChild(makeCard([makeRow('Descarga iniciada',makeInp(a.dischStart,function(){a.dischStart=this.value;autoSave();},'datetime-local')),makeRow('Fin previsto',makeInp(a.etc2,function(){a.etc2=this.value;autoSave();},'datetime-local')),makeRow('Tanques inspeccionados',makeInp(a.tanks,function(){a.tanks=this.value;autoSave();},'datetime-local')),makeRow('Mangueras conectadas',makeInp(a.hoses,function(){a.hoses=this.value;autoSave();},'datetime-local'))]));
+  var btnRow=document.createElement('div');btnRow.className='btns';
+  btnRow.appendChild(makeBtn('💾 Guardar','bp',function(){saveEscala(current);}));
+  btnRow.appendChild(makeBtn('✉ Generar','bs',genArrival));
+  body.appendChild(btnRow);
+}
+
+// SAILING TAB
+function renderSailing(){
+  if(!current){renderInicio();return;}
+  var body=document.getElementById('app-body');var s=current.sailing;
+  body.appendChild(makeSec('Fin operaciones'));
+  body.appendChild(makeCard([makeRow('Descarga iniciada',makeInp(s.dischStart,function(){s.dischStart=this.value;autoSave();},'datetime-local')),makeRow('Descarga terminada',makeInp(s.dischEnd,function(){s.dischEnd=this.value;autoSave();},'datetime-local')),makeRow('Ullage completado',makeInp(s.ullage,function(){s.ullage=this.value;autoSave();},'datetime-local')),makeRow('Cálculos completados',makeInp(s.calcs,function(){s.calcs=this.value;autoSave();},'datetime-local'))]));
+  body.appendChild(makeSec('Cantidades'));
+  body.appendChild(makeCard([makeRow(current.cargo,makeInp(s.qty1,function(){s.qty1=this.value;autoSave();},'number')),makeRow('BL 1',makeInp(s.bl1,function(){s.bl1=this.value;autoSave();},'number')),makeRow('BL 2',makeInp(s.bl2,function(){s.bl2=this.value;autoSave();},'number'))]));
+  body.appendChild(makeSec('Salida'));
+  body.appendChild(makeCard([makeRow('Pilot on board (OUT)',makeInp(s.pilotOut,function(){s.pilotOut=this.value;autoSave();},'datetime-local')),makeRow('Vessel sailed',makeInp(s.sailed,function(){s.sailed=this.value;autoSave();},'datetime-local')),makeRow('Next POC',makeInp(s.nextPort,function(){s.nextPort=this.value;autoSave();})),makeRow('ETA next POC',makeInp(s.etaNext,function(){s.etaNext=this.value;autoSave();},'datetime-local')),makeRow('FO salida',makeInp(s.fo,function(){s.fo=this.value;autoSave();},'number')),makeRow('DO salida',makeInp(s.doo,function(){s.doo=this.value;autoSave();},'number'))]));
+  var btnRow=document.createElement('div');btnRow.className='btns';
+  btnRow.appendChild(makeBtn('💾 Guardar','bp',function(){saveEscala(current);}));
+  btnRow.appendChild(makeBtn('✉ Generar','bs',genSailing));
+  body.appendChild(btnRow);
+}
+
+// DOCS TAB
+function renderDocs(){
+  if(!current){renderInicio();return;}
+  var body=document.getElementById('app-body');
+  var info=document.createElement('div');info.style.cssText='padding:8px 12px 4px;font-size:12px;color:var(--tm)';info.textContent='Selecciona un documento para generarlo.';
+  body.appendChild(info);
+  var grid=document.createElement('div');grid.className='doc-tags';
+  [{k:'cnp-alm',i:'🚢',n:'CNP Almería',s:'Aviso policía'},{k:'cnp-car',i:'⚓',n:'CNP Carboneras',s:'Aviso policía'},{k:'cnp-mot',i:'🏭',n:'CNP Motril',s:'Aviso policía'},{k:'eta',i:'📅',n:'ETA Notice',s:'Aviso llegada'},{k:'nil',i:'📋',n:'NIL Manifest',s:'Manifiesto'},{k:'gc',i:'🛡️',n:'Reg. G. Civil',s:'Carboneras'}].forEach(function(doc){
+    var d=document.createElement('div');d.className='dtag';
+    d.innerHTML='<div class="dtag-ico">'+doc.i+'</div><div class="dtag-n">'+doc.n+'</div><div class="dtag-s">'+doc.s+'</div>';
+    d.addEventListener('click',function(){genDoc(doc.k);});
+    grid.appendChild(d);
+  });
+  body.appendChild(grid);
+}
+
+// GENERATORS
+function fdt(v){if(!v)return '__:__';var d=new Date(v);return d.toLocaleDateString('es-ES',{day:'2-digit',month:'2-digit',year:'2-digit'})+' '+d.toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'})+' hrs lt';}
+
+function showDocText(title,txt){
+  var body=document.getElementById('app-body');body.innerHTML='';
+  var lbl=document.createElement('div');lbl.style.cssText='padding:8px 12px 4px;font-size:11px;color:var(--tm);font-weight:600;text-transform:uppercase;letter-spacing:.6px';lbl.textContent=title;
+  body.appendChild(lbl);
+  var pre=document.createElement('pre');pre.className='doc';pre.id='doc-txt';pre.textContent=txt;
+  body.appendChild(pre);
+  var btnRow=document.createElement('div');btnRow.className='btns';
+  btnRow.appendChild(makeBtn('📋 Copiar','bp',function(){if(navigator.clipboard)navigator.clipboard.writeText(pre.textContent).then(function(){toast('Copiado ✓');});else{var r=document.createRange();r.selectNode(pre);window.getSelection().removeAllRanges();window.getSelection().addRange(r);document.execCommand('copy');window.getSelection().removeAllRanges();toast('Copiado ✓');}}));
+  btnRow.appendChild(makeBtn('✉ Enviar','bs',function(){toast('Enviado ✓');}));
+  body.appendChild(btnRow);
+  var backBtn=makeBtn('← Volver a documentos','bg2',function(){renderDocs();});backBtn.style.cssText='margin:4px 12px 12px;width:calc(100% - 24px)';
+  body.appendChild(backBtn);
+}
+
+function genDoc(type){
+  var b=current.buque;
+  var pn=type==='cnp-alm'?'Almería':type==='cnp-car'?'Carboneras':type==='cnp-mot'?'Motril':current.port;
+  var txt='';
+  if(type.indexOf('cnp')===0){
+    txt='NOTIFICACIÓN — C.N.P.\nPUESTO FRONTERIZO MARÍTIMO — '+pn.toUpperCase()+'\n\nBUQUE:              '+current.vessel+'\nCAPITÁN:            '+(b.captain||'—')+'\nBANDERA:            '+(b.flag||'—')+'\nGT:                 '+(b.gt||'—')+'\nOMI:                '+(b.imo||'—')+'\nINDICATIVO:         '+(b.callsign||'—')+'\nPUERTO ANTERIOR:    '+(b.lastPort||'—')+'\nETA:                '+fdt(b.eta)+'\nATRAQUE:            '+fdt(b.etb)+'\nMUELLE:             '+(b.berth||'—')+'\nPUERTO POSTERIOR:   '+(b.nextPort||'—')+'\nETD:                '+fdt(b.etd)+'\nTRIP. LLEGADA:      '+(b.crewIn||0)+'\nTRIP. SALIDA:       '+(b.crewOut||0)+'\nPAX IN:             '+(b.paxIn||0)+'\nPAX OUT:            '+(b.paxOut||0)+'\nOPERACIÓN:          '+current.op+' '+current.cargo+' '+current.tons+' Tn\n\nRESIDUOS SÓLIDOS: 0  ORGÁNICOS: 0  OLEOSOS: 0\n\nSaludos cordiales,\nS.A. López Guillén';
+  } else if(type==='eta'){
+    txt='ETA NOTICE\n\nETA '+current.port+': '+fdt(b.eta)+'\nETB: '+fdt(b.etb)+'\nETD: '+fdt(b.etd)+'\nCargo: '+current.cargo+' — '+current.tons+' Tn\n\nS.A. López Guillén\nagency.almeria@salg.es';
+  } else if(type==='nil'){
+    txt='NIL MANIFEST\n\n'+current.vessel+' / '+(b.flag||'—')+' / '+(b.captain||'—')+'\nDE: '+(b.lastPort||'—')+' → A: '+(b.nextPort||'—')+'\n\nMercancías a bordo: NIL\nFecha: '+new Date().toLocaleDateString('es-ES');
+  } else if(type==='gc'){
+    txt='PUESTO FISCAL — CARBONERAS\n\nNOMBRE: '+current.vessel+' / IMO: '+(b.imo||'—')+'\nBANDERA: '+(b.flag||'—')+' / GT: '+(b.gt||'—')+' / LOA: '+(b.loa||'—')+' m\nLLEGADA: '+fdt(b.eta)+' / SALIDA: '+fdt(b.etd)+'\nPROCEDENCIA: '+(b.lastPort||'—')+' / DESTINO: '+(b.nextPort||'—')+'\nDESCARGA: '+current.cargo+' '+current.tons+' Tn';
+  }
+  showDocText(pn,txt);
+}
+
+function genArrival(){
+  var b=current.buque,a=current.arrival;
+  showDocText('Arrival Report','ARRIVAL REPORT\n\n'+current.vessel+' — '+current.port+'\n\nARRIVAL\nVessel on roads, EOSP:    '+fdt(a.eosp)+'\nN.O.R. Tendered:          AS PER CHARTER PARTY\nN.O.R. Accepted:          AS PER CHARTER PARTY\n\nBERTHING\nPilot on board (IN):      '+fdt(a.pilotIn)+'\nFirst Line Ashore:        '+fdt(a.firstLine)+'\nAll Fast Alongside:       '+fdt(a.allFast)+'\nGangway Down:             '+fdt(a.gangway)+'\nTug boats: '+(a.tugs||'—')+'\n\nDrafts: FWD '+(b.fwd||0)+'m / AFT '+(b.aft||0)+'m\nBunkers: FO '+(b.fo||0)+' / DO '+(b.doo||0)+' / LO '+(b.lo||0)+' / FW '+(b.fw||0)+' Mt\n\nCARGO OPS\nDischarging started:      '+fdt(a.dischStart)+'\nExpected completion:      '+fdt(a.etc2)+'\n\nBest regards,\nS.A. López Guillén');
+}
+
+function genSailing(){
+  var s=current.sailing;
+  showDocText('Sailing Report','FINAL AND SAILING REPORT\n\n'+current.vessel+' — '+current.port+'\n\nCARGO OPS\nDischarging started:      '+fdt(s.dischStart)+'\nDischarging finished:     '+fdt(s.dischEnd)+'\nTotal: '+current.cargo+' '+(s.qty1||0)+' Tn\n\nSAILING\nPilot on board (OUT):     '+fdt(s.pilotOut)+'\nVessel sailed:            '+fdt(s.sailed)+'\nNext POC: '+(s.nextPort||'—')+' / ETA: '+fdt(s.etaNext)+' agw wp\nBunkers: FO '+(s.fo||0)+' / DO '+(s.doo||0)+' Mt\n\nBest regards,\nS.A. López Guillén');
+}
+
+function genSRS(){
+  var lines=[];
+  Object.entries(current.srs.checked).forEach(function(kv){if(kv[1]&&kv[0].indexOf('_nota')<0){var nota=current.srs.checked[kv[0]+'_nota'];lines.push('  • '+kv[0].split('::')[1]+(nota?' — '+nota:''));}});
+  if(current.srs.libre)lines.push('\nOtros:\n'+current.srs.libre);
+  showDocText('SRS','SHIP REQUIREMENT SHEET\n\nBuque: '+current.vessel+' / Puerto: '+current.port+'\nFecha: '+new Date().toLocaleDateString('es-ES')+'\n\nSERVICIOS SOLICITADOS:\n'+(lines.length?lines.join('\n'):'(ninguno seleccionado)')+'\n\nS.A. López Guillén');
+}
+
+// UTILS
+function show(id){document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on');});document.getElementById(id).classList.add('on');}
+var toastT;
+function toast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){el.classList.remove('on');},2200);}
+
+function afterLogin(){
+  show('s-loading');document.getElementById('loading-msg').textContent='Cargando escalas...';
+  document.getElementById('hdr-user').textContent=user.name.split(' ')[0];
+  loadEscalas().then(function(){show('s-app');navTo('inicio','nav-inicio');});
+}
+
+// INIT
+(function(){
+  var s=document.createElement('script');
+  s.src='https://alcdn.msauth.net/browser/2.38.0/js/msal-browser.min.js';
+  s.onload=function(){
+    msalApp=new msal.PublicClientApplication(msalConfig);
+    msalApp.initialize().then(function(){
+      show('s-loading');document.getElementById('loading-msg').textContent='Verificando sesión...';
+      return msalApp.handleRedirectPromise();
+    }).then(function(resp){
+      if(resp&&resp.account){user={name:resp.account.name,email:resp.account.username};msalApp.setActiveAccount(resp.account);afterLogin();return;}
+      var accounts=msalApp.getAllAccounts();
+      if(accounts.length>0){msalApp.setActiveAccount(accounts[0]);user={name:accounts[0].name,email:accounts[0].username};afterLogin();}
+      else{show('s-login');}
+    }).catch(function(e){show('s-login');document.getElementById('login-error').textContent='Error: '+e.message;});
+  };
+  s.onerror=function(){show('s-login');document.getElementById('login-error').textContent='Error cargando librería de autenticación. Comprueba la conexión.';};
+  document.head.appendChild(s);
+  document.getElementById('login-btn').addEventListener('click',function(){if(msalApp)msalApp.loginRedirect({scopes:SCOPES});else document.getElementById('login-error').textContent='Aún cargando, espera un momento…';});
+  document.getElementById('new-btn').addEventListener('click',function(){goNew();});
+  document.querySelectorAll('.ni').forEach(function(btn){btn.addEventListener('click',function(){var tab=btn.getAttribute('data-tab');navTo(tab,btn.id);});});
+})();
+</script>
+</body>
+</html>
